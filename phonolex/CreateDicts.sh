@@ -10,7 +10,7 @@
 #
 cd local
 
-phonolexdict=/idiap/resource/database/phonolex
+phonolexdict=../media
 sourceDict=$phonolexdict/phonolex
 sourceConv=phonolex.utf8.txt
 tempDict=phonolex.temp

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # Copyright 2012 by Idiap Research Institute, http://www.idiap.ch
 #
