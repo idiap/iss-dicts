@@ -21,7 +21,7 @@ echo Expanding optional phones to $tmp2
 
 echo Converting to HTK format as B50.dct
 sort -u $tmp2 > $tmp3
-./bdlex50_htk_lexicon.sh $tmp3 B50.dct
+./bdlex50_htk_lexicon.sh $tmp3 B50.dct 0
 #./bdlex50_htk_lexicon.py $tmp1 B50.dct
 
 rm -f $tmp1 $tmp2 $tmp3

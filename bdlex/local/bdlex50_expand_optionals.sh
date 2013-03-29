@@ -59,7 +59,7 @@ do
 	removeOptionalPhonemes $phonemes
 
 	#Another pronunciation without optional phonemes
-	if [ $phonemes != $_currentPhonemes ]
+	if [[ $phonemes != $_currentPhonemes ]]
 	then	
 		printf "%s;%s;%s\n" "$graphemes" "$_currentPhonemes" "$remainder"
 	fi
