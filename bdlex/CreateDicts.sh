@@ -15,13 +15,18 @@ tmp3=/dev/shm/bdlex3.tmp
 echo Creating monolithic dictionary $tmp1
 cat ../media/BDL50/?.B50.flx > $tmp1
 
-# This step is only necessary for the shell-based method
-echo Expanding optional phones to $tmp2
-./bdlex50_expand_optionals.sh $tmp1 $tmp2
+if false
+then
+    # Shell-based method
+    # Slow and leaves odd symbols ('.', '_') in the phone list
+    echo Expanding optional phones to $tmp2
+    ./bdlex50_expand_optionals.sh $tmp1 $tmp2
 
-echo Converting to HTK format as B50.dct
-sort -u $tmp2 > $tmp3
-./bdlex50_htk_lexicon.sh $tmp3 B50.dct 0
-#./bdlex50_htk_lexicon.py $tmp1 B50.dct
-
+    echo Converting to HTK format
+    sort -u $tmp2 > $tmp3
+    ./bdlex50_htk_lexicon.sh $tmp3 dictionary.txt 0
+else
+    # Python based method
+    ./bdlex50_htk_lexicon.py $tmp1 dictionary.txt
+fi
 rm -f $tmp1 $tmp2 $tmp3
