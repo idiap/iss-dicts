@@ -22,6 +22,9 @@ if nargs < 3:
 input = open(sys.argv[1], 'r')
 phtrain = open(sys.argv[2], 'w')
 
+# -6 (diph = True) means "join distinct phones into 14 new
+# diphthongs".  Normally we don't want this as it's worse for ASR, but
+# it may be necessary for TTS.
 diph = False
 if nargs > 3 and sys.argv[3] == '-6':
   diph = True
