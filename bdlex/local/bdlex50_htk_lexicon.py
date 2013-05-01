@@ -95,7 +95,7 @@ def normalizeAndFormatAsHTK(lines):
 
         lines[i] = "%s\t%s" % (normGraphemes, htkPhonemes)
 
-phonemeFix={u"h ":u"", u"r" : u"R"}
+phonemeFix={u"h ":u"", u"r" : u"R", u"E~":u"e~"}
 
 def postProcessPhonemes(phonemes):
     """ Correct the pronunciation by converting
