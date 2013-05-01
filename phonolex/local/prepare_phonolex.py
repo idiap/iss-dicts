@@ -29,6 +29,7 @@ diph = False
 if nargs > 3 and sys.argv[3] == '-6':
   diph = True
 
+# Some of these, like the G and R, will be filtered out later
 phoneset=['@','2','2:','6','9','a','a~','a~:','a:','aI','aU','b','C','d','e','e~','e:','E','E~','E~:','E:','f','g','h','i','i:','I','j','k','l','m','n','N','o','o~','o~:','o:','O','O:','OY','p','Q','r','R','s','S','t', 'ts', 'tS', 'pf','u','u:','U','v','x','y','y:','Y','z','Z']
 
 if diph:
@@ -118,6 +119,9 @@ try:
         phonemes = phonemes.replace("a: 6","a:6")
         phonemes = phonemes.replace("aU6","a U6")
         phonemes = phonemes.replace("aI6","a I6")
+
+      # Fix typos
+      phonemes = phonemes.replace("R","r")
       phonemes = phonemes.replace("G","g")
 
       writeout=0
