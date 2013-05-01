@@ -19,10 +19,10 @@ usage="""
 
    - input file name: BDLex50 lexicon file
    - output file name: where to output
-   
+
 """
 
-import sys 
+import sys
 import os
 
 from bdlex50_module import *
@@ -39,6 +39,7 @@ from ioread import Ioread
 SEPARATOR = ";"
 GRAPHEMEINDEX = 0
 PHONEMEINDEX = 1
+LIAISONINDEX = 2
 
 ###########################
 #Implementation
@@ -53,44 +54,56 @@ def readLexicon(fileName):
 
 	for line in lines:
 		splitLine = line.split(SEPARATOR)
-		lexicon[splitLine[GRAPHEMEINDEX]] = splitLine[PHONEMEINDEX].rstrip()
+		lexicon[splitLine[GRAPHEMEINDEX]] = (splitLine[PHONEMEINDEX].rstrip(), splitLine[LIAISONINDEX].rstrip())
 
 	return lexicon
 
 
 def expandOptional(lexicon):
-	"""Optional phonemes characters are expanded.
- 	"""
-	lines=[]
+    """Optional phonemes characters are expanded.
+    """
+    lines=[]
 
-	for g, p in lexicon.iteritems():
+    for g, (p, l) in lexicon.iteritems():
+        #print p, l
+        pExpanded = expandOptionalPhonemes(p + l)
+        pRemoved = expandOptionalPhonemes(p)
+        #print pExpanded, pRemoved
+        for i in range(len(pExpanded)):
+            lines.append("%s%s%s" %(g, SEPARATOR, pExpanded[i]))
 
-		pExpanded = expandOptionalPhonemes(p)
-		pRemoved = removeOptionalPhonemes(p)
+        for i in range(len(pRemoved)):
+            if not pRemoved[i] in pExpanded:
+                lines.append("%s%s%s" %(g, SEPARATOR, pRemoved[i]))
 
-		lines.append("%s%s%s" %(g, SEPARATOR, pExpanded))
-
-		if pRemoved != pExpanded:
-			lines.append("%s%s%s" %(g, SEPARATOR, pRemoved))
-		
-	return lines
+    return lines
 
 
 def normalizeAndFormatAsHTK(lines):
-	"""Different normalization and format.
- 	"""
+    """Different normalization and format.
+    """
+    
+    for i, gp in enumerate(lines):
+        
+        g, p = gp.split(SEPARATOR)
+        
+        normGraphemes = normaliseGraphemes(g)
+        normPhonemes = normaliseOthers(p)
+        
+        htkPhonemes = getPhonemesEntryAsHTK(normPhonemes)
+        htkPhonemes = postProcessPhonemes(htkPhonemes)
 
-	for i, gp in enumerate(lines):
+        lines[i] = "%s\t%s" % (normGraphemes, htkPhonemes)
 
-		g, p = gp.split(SEPARATOR)
+phonemeFix={u"h ":u"", u"r" : u"R"}
 
-		normGraphemes = normaliseGraphemes(g)
-		normPhonemes = normaliseOthers(p)
-
-		htkPhonemes = getPhonemesEntryAsHTK(normPhonemes)
-
-		lines[i] = "%s\t%s" % (normGraphemes, htkPhonemes)
-
+def postProcessPhonemes(phonemes):
+    """ Correct the pronunciation by converting
+        phones which are obviously a mistake."""
+    # This is not the most efficient way, but short and clear
+    for i in phonemeFix.keys():
+        phonemes = phonemes.replace(i, phonemeFix[i])
+    return phonemes
 
 def getPhonemesEntryAsHTK(phonemes):
 	"""Output one BDLex50 entry as HTK format.
@@ -100,10 +113,10 @@ def getPhonemesEntryAsHTK(phonemes):
 	   arguments:
 			- g: graphemes
 			- p: phonemes
-	""" 
+	"""
 
 	#String are immutables
-	p = phonemes	
+	p = phonemes
 	htkPhonemes = ""
 
 	#Loop through each phonemes
@@ -111,11 +124,11 @@ def getPhonemesEntryAsHTK(phonemes):
 	while len(p) > 0:
 
 		char1 = p[0]
-		
+
 		if char1 == "(" or char1 == "~":
-			print "Illegal character: %s for %s and %s." % (char1, cg, phonemes)
+			print "Illegal character: %s for %s and %s." % (char1, p, phonemes)
 			exit(1)
-		
+
 		#Ready for next character
 		p = p[1:]
 
@@ -132,16 +145,16 @@ def getPhonemesEntryAsHTK(phonemes):
 				htkPhonemes += " %s" % char1
 		else:
 			htkPhonemes += " %s" % char1
-			
+
 	return htkPhonemes.strip()
-				
+
 
 def outputLexicon(lines, outputName):
 	"""Final htk formatted lexicon is outputed.
 	"""
 
 	strContent = "\n".join(lines)
-	strContent += "\n"	
+	strContent += "\n"
 
 	io = Ioread()
 	io.writeFileContent(outputName, strContent)
@@ -161,7 +174,7 @@ if __name__ == "__main__":
 		sys.exit(0)
 
 
-    #Get arguments    
+    #Get arguments
 	bdlex50Lexicon = sys.argv[1]
 	outputFileName = sys.argv[2]
 
@@ -186,5 +199,3 @@ if __name__ == "__main__":
 
 	#Output final htk formatted lexicon
 	outputLexicon(lines, outputFileName)
-
-
