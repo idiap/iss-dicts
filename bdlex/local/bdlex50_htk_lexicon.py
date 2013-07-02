@@ -40,6 +40,7 @@ SEPARATOR = ";"
 GRAPHEMEINDEX = 0
 PHONEMEINDEX = 1
 LIAISONINDEX = 2
+POSINDEX = 3
 
 ###########################
 #Implementation
@@ -51,12 +52,14 @@ def readLexicon(fileName):
 	lines = io.readFileContentList(fileName)
 
 	lexicon={}
+	pos={}
 
 	for line in lines:
 		splitLine = line.split(SEPARATOR)
 		lexicon[splitLine[GRAPHEMEINDEX]] = (splitLine[PHONEMEINDEX].rstrip(), splitLine[LIAISONINDEX].rstrip())
+		pos[normaliseGraphemes(splitLine[GRAPHEMEINDEX])] = splitLine[POSINDEX].rstrip()
 
-	return lexicon
+	return lexicon, pos
 
 
 def expandOptional(lexicon):
@@ -82,14 +85,14 @@ def expandOptional(lexicon):
 def normalizeAndFormatAsHTK(lines):
     """Different normalization and format.
     """
-    
+
     for i, gp in enumerate(lines):
-        
+
         g, p = gp.split(SEPARATOR)
-        
+
         normGraphemes = normaliseGraphemes(g)
         normPhonemes = normaliseOthers(p)
-        
+
         htkPhonemes = getPhonemesEntryAsHTK(normPhonemes)
         htkPhonemes = postProcessPhonemes(htkPhonemes)
 
@@ -159,6 +162,20 @@ def outputLexicon(lines, outputName):
 	io = Ioread()
 	io.writeFileContent(outputName, strContent)
 
+def outputPOSLexicon(lexicon, outputName):
+    """POS lexicon is outputed.
+    """
+    entries=[]
+
+    for g, pos in lexicon.iteritems():
+        # print g, pos
+        entries.append("%s\t%s" % (g, pos))
+
+    strContent = "\n".join(entries)
+    strContent += "\n"
+
+    io = Ioread()
+    io.writeFileContent(outputName, strContent)
 
 ###########################
 #Main program
@@ -182,7 +199,7 @@ if __name__ == "__main__":
 
 	#Read original BDLex 50 lexicon as
 	#a dictionary
-	lexicon = readLexicon(bdlex50Lexicon)
+	(lexicon, pos) = readLexicon(bdlex50Lexicon)
 
 	print "    Expand optional pronunciations..."
 
@@ -199,3 +216,8 @@ if __name__ == "__main__":
 
 	#Output final htk formatted lexicon
 	outputLexicon(lines, outputFileName)
+
+	print "    Output POS bdl50 lexicon..."
+    
+   	#Output POS lexicon
+	outputPOSLexicon(pos, "POS_"+outputFileName)
