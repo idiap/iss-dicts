@@ -8,19 +8,19 @@ be used to manipulate it further.
 
 Instructions:
 
-1. Run ./CreateLinks.sh
+1. Run `./CreateLinks.sh`
    - This will link the media directories in each directory
 
-Then for each dictionary that you need, cd <directory> and:
+Then for each dictionary that you need, `cd <directory>` and:
 
-2. Run ./CreateDicts.sh
+2. Run `./CreateDicts.sh`
    - Converts the native dictionary format to something more standard
 
-3. Run ./CreatePSaurus.sh
+3. Run `./CreatePSaurus.sh`
    - This will run phonitisaurus to generate an FST for the dictionary
 
 Note that phonetisaurus FST creation (rather, the alignment stage) can
 use up a lot of memory, so it may be necessary to run it in the grid.
 
---
-Phil Garner, March 2013
+
+[Phil Garner](http://www.idiap.ch/~pgarner), March 2013
