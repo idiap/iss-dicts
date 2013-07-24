@@ -46,39 +46,53 @@ POSINDEX = 3
 #Implementation
 #
 def readLexicon(fileName):
-	"""Read BDLex50 lexicon."""
+    """Read BDLex50 lexicon."""
 
-	io = Ioread()
-	lines = io.readFileContentList(fileName)
+    io = Ioread()
+    lines = io.readFileContentList(fileName)
 
-	lexicon={}
-	pos={}
+    lexicon={}
+    pos={}
 
-	for line in lines:
-		splitLine = line.split(SEPARATOR)
-		lexicon[splitLine[GRAPHEMEINDEX]] = (splitLine[PHONEMEINDEX].rstrip(), splitLine[LIAISONINDEX].rstrip())
-		pos[normaliseGraphemes(splitLine[GRAPHEMEINDEX])] = splitLine[POSINDEX].rstrip()
-
-	return lexicon, pos
+    for line in lines:
+        #print line
+        # BP 20130701: homographs were not handled correctly
+        # BP 20130723: merge change of milos for pos handling
+        splitLine = line.split(SEPARATOR)
+        entry = (splitLine[PHONEMEINDEX].rstrip(), splitLine[LIAISONINDEX].rstrip())
+        pos_entry = splitLine[POSINDEX].rstrip()
+        if lexicon.has_key(splitLine[GRAPHEMEINDEX]):
+            lexicon[splitLine[GRAPHEMEINDEX]].append(entry)
+            pos[splitLine[GRAPHEMEINDEX]].append(entry)
+        else:
+            lexicon[splitLine[GRAPHEMEINDEX]] = [entry]
+            pos[splitLine[GRAPHEMEINDEX]] = [pos_entry]
+    return lexicon, pos
 
 
 def expandOptional(lexicon):
     """Optional phonemes characters are expanded.
     """
     lines=[]
+    udic = {}
+    for g, ll in lexicon.iteritems():
+        for (p,l) in ll:
+            #print p, l
+            pExpanded = expandOptionalPhonemes(p + l)
+            pRemoved = expandOptionalPhonemes(p)
+            #print pExpanded, pRemoved
+            for i in range(len(pExpanded)):
+                if not udic.has_key(g + u'_' + pExpanded[i]):
+                    lines.append("%s%s%s" %(g, SEPARATOR, pExpanded[i]))
+                    udic[g + u'_' + pExpanded[i]] = 1
 
-    for g, (p, l) in lexicon.iteritems():
-        #print p, l
-        pExpanded = expandOptionalPhonemes(p + l)
-        pRemoved = expandOptionalPhonemes(p)
-        #print pExpanded, pRemoved
-        for i in range(len(pExpanded)):
-            lines.append("%s%s%s" %(g, SEPARATOR, pExpanded[i]))
+            for i in range(len(pRemoved)):
+                if not udic.has_key(g + u'_' + pRemoved[i]):
+                    #if not pRemoved[i] in pExpanded:
 
-        for i in range(len(pRemoved)):
-            if not pRemoved[i] in pExpanded:
-                lines.append("%s%s%s" %(g, SEPARATOR, pRemoved[i]))
-
+                    lines.append("%s%s%s" %(g, SEPARATOR, pRemoved[i]))
+                    udic[g + u'_' + pRemoved[i]] = 1
+    udic = {}
     return lines
 
 
@@ -98,7 +112,7 @@ def normalizeAndFormatAsHTK(lines):
 
         lines[i] = "%s\t%s" % (normGraphemes, htkPhonemes)
 
-phonemeFix={u"h ":u"", u"r" : u"R", u"E~":u"e~"}
+phonemeFix={u"h ":u"", u"r":u"R", u"E~":u"e~", u"O~":u"o~", u"i~":u"e~"}
 
 def postProcessPhonemes(phonemes):
     """ Correct the pronunciation by converting
@@ -151,7 +165,6 @@ def getPhonemesEntryAsHTK(phonemes):
 
 	return htkPhonemes.strip()
 
-
 def outputLexicon(lines, outputName):
 	"""Final htk formatted lexicon is outputed.
 	"""
@@ -167,15 +180,65 @@ def outputPOSLexicon(lexicon, outputName):
     """
     entries=[]
 
-    for g, pos in lexicon.iteritems():
-        # print g, pos
-        entries.append("%s\t%s" % (g, pos))
+    for g, ll in lexicon.iteritems():
+        for pos in ll:
+            # print g, pos
+            entries.append("%s\t%s" % (normaliseGraphemes(g), pos))
 
     strContent = "\n".join(entries)
     strContent += "\n"
 
     io = Ioread()
     io.writeFileContent(outputName, strContent)
+
+extra_lex = {"c'":"s",
+             "d'":"d",
+             "j'":"Z",
+             "l'":"l",
+             "m'":"m",
+             "n'":"n",
+             "s'":"s",
+             "t'":"t",
+             "y'":"j",
+             "jusqu'":"Z y s k",
+             "lorsqu'":"l O R s k",
+             "puisqu'":"p H i s k",
+             "qu':":"k",
+             "quelqu'":"k E l k",
+             "quoiqu'":"k w a k",
+             "entr'":"a~ t R",
+             "a.":"a",
+             "b.":"b E",
+             "c.":"s E",
+             "d.":"d E",
+             "e.":"2",
+             "f.":"E f",
+             "g.":"Z E",
+             "h.":"a S",
+             "i.":"i",
+             "j.":"Z i",
+             "k.":"k a",
+             "l.":"E l",
+             "m.":"E m",
+             "n.":"E n",
+             "o.":"o",
+             "p.":"p E",
+             "q.":"k y",
+             "r.":"E R",
+             "s.":"E s",
+             "t.":"t E",
+             "u.":"y",
+             "v.":"v E",
+             "w.":"d u b l 6 v E",
+             "x.":"i k s",
+             "y.":"i g R E k",
+             "z.":"z E d"
+             }
+def addExtraLexicon(outputName):
+    out = open(outputName, "a")
+    for w in extra_lex.keys():
+        out.write(u"%s\t%s\n" % (w, extra_lex[w]))
+    out.close()
 
 ###########################
 #Main program
@@ -216,8 +279,9 @@ if __name__ == "__main__":
 
 	#Output final htk formatted lexicon
 	outputLexicon(lines, outputFileName)
-
+	# Add missing entries
+	addExtraLexicon(outputFileName)
 	print "    Output POS bdl50 lexicon..."
-    
-   	#Output POS lexicon
+
+	#Output POS lexicon
 	outputPOSLexicon(pos, "POS_"+outputFileName)
