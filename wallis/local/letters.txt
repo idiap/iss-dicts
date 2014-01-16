@@ -1,0 +1,26 @@
+A a a
+B b e e
+C z e e
+D d e e
+E e e
+F ae f
+G g e e
+H h a a
+I i i
+J j o t
+K k a a
+L ae l
+M ae m
+N ae n
+O o o
+P p e e
+Q k u
+R ae r
+S ae s
+T t e e
+U u u
+V f a u
+W w e e
+X i k s
+Y ue p s i l o n
+Z z ae t
