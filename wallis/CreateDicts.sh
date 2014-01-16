@@ -10,7 +10,8 @@
 source ../Common.sh
 chdir local
 
-csvDir=~/walliserdeutsch/dict
+# Temporary
+csvDir=/idiap/group/speech/databases/walliserdeutsch/dicts
 
 ./lexicon.rb -p dictionary.txt $csvDir/*.csv
 dict-man.rb -p phones.txt dictionary.txt
