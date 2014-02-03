@@ -73,13 +73,13 @@ if pronDict
       p.gsub!(/qu/, 'kw')
       p.gsub!(/c/, 'k')
       p.gsub!(/x/, 'ks')
+      p.gsub!(/q/, 'k')
       p = p.split('')
       p.delete("-")
       p.each do |q|
         # Put back the ones we messed up
         q.gsub!('S', 'sch')
         q.gsub!('C', 'ch')
-        q.gsub!('Q', 'qu')
 
         # Get rid of umlauts
         q.gsub!('ä', 'ae')
